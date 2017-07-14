@@ -76,7 +76,7 @@ class IMAPSearchClient(object):
         if not query:
             return []
 
-        query = query[0].union(*query[1:]) \
+        query = query[0].union_all(*query[1:]) \
                         .order_by(desc(Message.received_date))
 
         if offset:
@@ -131,7 +131,7 @@ class IMAPSearchClient(object):
         if not query:
             return []
 
-        query = query[0].union(*query[1:])
+        query = query[0].union_all(*query[1:])
 
         if offset:
             query = query.offset(offset)
@@ -221,4 +221,5 @@ class IMAPSearchClient(object):
 
         self.log.debug('Search found messages for folder',
                        folder_name=folder.id, uids=len(uids))
+        print '@@@ FOLDER: {} - {}\n@@@ UIDs: {}'.format(folder.id, folder.name, uids)
         return {folder.id: uids}
