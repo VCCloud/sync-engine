@@ -60,7 +60,8 @@ class IMAPSearchClient(object):
     def search_messages(self, db_session, search_query, offset=0, limit=40):
         imap_uids_map = {}
         for kv in self._search(db_session, search_query):
-            if kv.values()[0]:
+            v = kv.values()
+            if v and v[0]:
                 imap_uids_map.update(kv)
 
         query = []
@@ -93,10 +94,11 @@ class IMAPSearchClient(object):
 
             with session_scope(self.account_id) as db_session:
                 for imap_uids_map in self._search(db_session, search_query):
-                    imap_uids = imap_uids_map.values()[0]
-                    if not imap_uids:
+                    imap_uids = imap_uids_map.values()
+                    if not (imap_uids and imap_uids[0]):
                         continue
 
+                    imap_uids = imap_uids[0]
                     folder_id = imap_uids_map.keys()[0]
                     query = db_session.query(Message) \
                         .join(ImapUid) \
@@ -112,7 +114,8 @@ class IMAPSearchClient(object):
     def search_threads(self, db_session, search_query, offset=0, limit=40):
         imap_uids_map = {}
         for kv in self._search(db_session, search_query):
-            if kv.values()[0]:
+            v = kv.values()
+            if v and v[0]:
                 imap_uids_map.update(kv)
 
         query = []
@@ -147,10 +150,11 @@ class IMAPSearchClient(object):
 
             with session_scope(self.account_id) as db_session:
                 for imap_uids_map in self._search(db_session, search_query):
-                    imap_uids = imap_uids_map.values()[0]
-                    if not imap_uids:
+                    imap_uids = imap_uids_map.values()
+                    if not (imap_uids and imap_uids[0]):
                         continue
 
+                    imap_uids = imap_uids[0]
                     folder_id = imap_uids_map.keys()[0]
                     query = db_session.query(Thread) \
                         .join(Message, Message.thread_id == Thread.id) \
@@ -221,5 +225,4 @@ class IMAPSearchClient(object):
 
         self.log.debug('Search found messages for folder',
                        folder_name=folder.id, uids=len(uids))
-        print '@@@ FOLDER: {} - {}\n@@@ UIDs: {}'.format(folder.id, folder.name, uids)
         return {folder.id: uids}
