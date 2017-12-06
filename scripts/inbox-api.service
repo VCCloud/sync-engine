@@ -1,0 +1,18 @@
+[Unit]
+Description=Nylas Sync Engine - API
+After=network.target
+
+[Service]
+User=inbox
+Group=inbox
+WorkingDirectory=/opt/inboxapp
+Environment=VIRTUAL_ENV=/opt/inboxapp/.venv
+Environment=PATH=$VIRTUAL_ENV/bin:$PATH
+Environment=PYTHONPATH=/opt/inboxapp
+SyslogIdentifier=inbox-api
+ExecStart=/opt/inboxapp/.venv/bin/python /opt/inboxapp/bin/inbox-api --prod --start-syncback
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
