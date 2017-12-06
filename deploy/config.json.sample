@@ -1,0 +1,77 @@
+{
+"DATABASE_HOSTS": [
+    {
+        "HOSTNAME": "mysql-server-host",
+        "PORT": 3306,
+        "SHARDS": [
+            {
+                "ID": 0,
+                "SCHEMA_NAME": "mailinbox_prod",
+                "OPEN": true
+            }
+        ]
+    }
+],
+
+"SYNCBACK_ASSIGNMENTS": {
+    0:[0,1,2,3,4,5]
+
+},
+
+"SYNC_STEAL_ACCOUNTS": true,
+
+"DB_POOL_SIZE": 25,
+"DB_POOL_MAX_OVERFLOW": 5,
+
+"LOGDIR": "/var/log/inboxapp",
+"LOGLEVEL": 10,
+
+"REDIS_PORT": 6379,
+"REDIS_SHARDS": ["localhost"],
+
+"ACCOUNT_QUEUE_REDIS_HOSTNAME": "localhost",
+"ACCOUNT_QUEUE_REDIS_DB": 3,
+
+"EVENT_QUEUE_REDIS_HOSTNAME": "localhost",
+"EVENT_QUEUE_REDIS_DB": 4,
+
+"BASE_ALIVE_THRESHOLD": 480,
+"CONTACTS_ALIVE_THRESHOLD": 480,
+"EVENTS_ALIVE_THRESHOLD": 480,
+"EAS_THROTTLED_ALIVE_THRESHOLD": 600,
+"EAS_PING_ALIVE_THRESHOLD": 780,
+
+"GOOGLE_OAUTH_REDIRECT_URI": "urn:ietf:wg:oauth:2.0:oob",
+"MS_LIVE_OAUTH_REDIRECT_URI": "https://login.live.com/oauth20_desktop.srf",
+
+"STORE_MESSAGES_ON_S3": false,
+"CUSTOM_S3_HOST": "s3.paas.vn",
+"CUSTOM_S3_PORT": 8080,
+"CUSTOM_S3_SSL": false,
+"AWS_ACCESS_KEY_ID": "29b5fa6620484a16aa558b4b599c9594",
+"AWS_SECRET_ACCESS_KEY": "96b56213b05d4966b03820969659ecc4",
+"TEMP_MESSAGE_STORE_BUCKET_NAME": "mailinbox-prod",
+"MSG_PARTS_DIRECTORY": "/var/lib/inboxapp/parts",
+
+"CALENDAR_POLL_FREQUENCY": 300,
+"EMAIL_EXCEPTIONS": false,
+"ENCRYPT_SECRETS": true,
+"DEBUG_CONSOLE_ON": true,
+
+"FEATURE_FLAGS": "ical_autoimport",
+
+"THROTTLE_DELETION": false,
+"UMPIRE_BASE_URL": "127.0.0.1",
+
+"MAILGUN_DOMAIN": null,
+"MAILGUN_API_KEY": null,
+
+"NOTIFICATIONS_MAILGUN_DOMAIN": null,
+"NOTIFICATIONS_MAILGUN_API_KEY": null,
+
+"INIT_SYNC_QUEUE_REDIS_HOSTNAME": "localhost",
+"INIT_SYNC_QUEUE_REDIS_PORT": 6379,
+"INIT_SYNC_QUEUE_REDIS_DB": 0,
+"ENABLE_DB_TXN_METRICS": true
+}
+
