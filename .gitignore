@@ -40,7 +40,7 @@ bin/zerorpc
 bin/symilar
 bin/f2py
 bin/epylint
-
+.venv
 # Packages
 *.egg
 *.egg-info
