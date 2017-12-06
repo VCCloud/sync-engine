@@ -58,15 +58,27 @@ class IMAPSearchClient(object):
         self.crispin_client.logout()
 
     def search_messages(self, db_session, search_query, offset=0, limit=40):
-        imap_uids = []
-        for uids in self._search(db_session, search_query):
-            imap_uids.extend(uids)
+        imap_uids_map = {}
+        for kv in self._search(db_session, search_query):
+            v = kv.values()
+            if v and v[0]:
+                imap_uids_map.update(kv)
 
-        query = db_session.query(Message) \
-            .join(ImapUid) \
-            .filter(ImapUid.account_id == self.account_id,
-                    ImapUid.msg_uid.in_(imap_uids))\
-            .order_by(desc(Message.received_date))\
+        query = []
+        for folder_id, imap_uids in imap_uids_map.iteritems():
+            q = db_session.query(Message) \
+                .join(ImapUid) \
+                .filter(ImapUid.account_id == self.account_id,
+                        ImapUid.folder_id == folder_id,
+                        ImapUid.msg_uid.in_(imap_uids))
+
+            query.append(q)
+
+        if not query:
+            return []
+
+        query = query[0].union_all(*query[1:]) \
+                        .order_by(desc(Message.received_date))
 
         if offset:
             query = query.offset(offset)
@@ -81,10 +93,17 @@ class IMAPSearchClient(object):
             encoder = APIEncoder()
 
             with session_scope(self.account_id) as db_session:
-                for imap_uids in self._search(db_session, search_query):
+                for imap_uids_map in self._search(db_session, search_query):
+                    imap_uids = imap_uids_map.values()
+                    if not (imap_uids and imap_uids[0]):
+                        continue
+
+                    imap_uids = imap_uids[0]
+                    folder_id = imap_uids_map.keys()[0]
                     query = db_session.query(Message) \
                         .join(ImapUid) \
                         .filter(ImapUid.account_id == self.account_id,
+                                ImapUid.folder_id == folder_id,
                                 ImapUid.msg_uid.in_(imap_uids))\
                         .order_by(desc(Message.received_date))\
 
@@ -93,24 +112,36 @@ class IMAPSearchClient(object):
         return g
 
     def search_threads(self, db_session, search_query, offset=0, limit=40):
-        imap_uids = []
-        for uids in self._search(db_session, search_query):
-            imap_uids.extend(uids)
+        imap_uids_map = {}
+        for kv in self._search(db_session, search_query):
+            v = kv.values()
+            if v and v[0]:
+                imap_uids_map.update(kv)
 
-        query = db_session.query(Thread) \
-            .join(Message, Message.thread_id == Thread.id) \
-            .join(ImapUid) \
-            .filter(ImapUid.account_id == self.account_id,
-                    ImapUid.msg_uid.in_(imap_uids),
-                    Thread.deleted_at == None,
-                    Thread.id == Message.thread_id)\
-            .order_by(desc(Message.received_date))
+        query = []
+        for folder_id, imap_uids in imap_uids_map.iteritems():
+            q = db_session.query(Thread) \
+                .join(Message, Message.thread_id == Thread.id) \
+                .join(ImapUid) \
+                .filter(ImapUid.account_id == self.account_id,
+                        ImapUid.msg_uid.in_(imap_uids),
+                        ImapUid.folder_id == folder_id,
+                        Thread.deleted_at == None,
+                        Thread.id == Message.thread_id)
+
+            query.append(q)
+
+        if not query:
+            return []
+
+        query = query[0].union_all(*query[1:])
 
         if offset:
             query = query.offset(offset)
 
         if limit:
             query = query.limit(limit)
+
         return query.all()
 
     def stream_threads(self, search_query):
@@ -118,11 +149,18 @@ class IMAPSearchClient(object):
             encoder = APIEncoder()
 
             with session_scope(self.account_id) as db_session:
-                for imap_uids in self._search(db_session, search_query):
+                for imap_uids_map in self._search(db_session, search_query):
+                    imap_uids = imap_uids_map.values()
+                    if not (imap_uids and imap_uids[0]):
+                        continue
+
+                    imap_uids = imap_uids[0]
+                    folder_id = imap_uids_map.keys()[0]
                     query = db_session.query(Thread) \
                         .join(Message, Message.thread_id == Thread.id) \
                         .join(ImapUid) \
                         .filter(ImapUid.account_id == self.account_id,
+                                ImapUid.folder_id == folder_id,
                                 ImapUid.msg_uid.in_(imap_uids),
                                 Thread.id == Message.thread_id)\
                         .order_by(desc(Message.received_date))
@@ -172,11 +210,11 @@ class IMAPSearchClient(object):
             self.crispin_client.select_folder(folder.name, uidvalidity_cb)
         except FolderMissingError:
             self.log.warn("Won't search missing IMAP folder", exc_info=True)
-            return []
+            return {}
         except UidInvalid:
             self.log.error(("Got Uidvalidity error when searching. "
                             "Skipping."), exc_info=True)
-            return []
+            return {}
 
         try:
             uids = self.crispin_client.conn.search(criteria, charset=charset)
@@ -187,4 +225,4 @@ class IMAPSearchClient(object):
 
         self.log.debug('Search found messages for folder',
                        folder_name=folder.id, uids=len(uids))
-        return uids
+        return {folder.id: uids}
