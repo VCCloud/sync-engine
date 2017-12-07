@@ -21,8 +21,7 @@ htmlcov
 /config.json
 inbox/test/.cache
 
-# location for editable pip installs
-/src
+# location for editable pip installs /src
 
 # virtualenv
 /include
@@ -87,3 +86,4 @@ setup/
 
 # Pycharm
 .idea/
+bin/inbox-auth2
