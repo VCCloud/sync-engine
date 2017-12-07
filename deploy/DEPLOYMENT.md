@@ -95,24 +95,19 @@ source .venv/bin/activate
 ./bin/migrate-db
 ```
 
-### Setup logging and systemd scripts
+### Setup supervisor
 
 Run as `root` user
 
 ```
+apt-get install -y supervisor
+
 cd /opt/inboxapp
-cp scripts/inbox-sync.service /lib/systemd/system/inbox-sync.service
-cp scripts/inbox-api.service /lib/systemd/system/inbox-api.service
-systemctl enable inbox-api.service
-systemctl enable inbox-sync.service
-cp scripts/10-sync-engine.conf /etc/rsyslog.d/10-sync-engine.conf
-service rsyslog restart
-systemctl start inbox-api.service
-systemctl start inbox-sync.service
+mkdir /var/log/inboxapp
+cp scripts/inboxapp.supervisor.conf /etc/supervisor/conf.d/inboxapp.conf
+supervisorctl reread
+supervisorctl update
 ```
 
-Verifying
-
-```
-tail -f /var/log/inboxapp/*.log
-```
+Verify-ing: Please check `/var/log/inboxapp/inbox-sync.stdout.log`
+`/var/log/inboxapp/inbox-api.stdout.log`
