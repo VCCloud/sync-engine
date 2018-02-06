@@ -62,6 +62,7 @@ echo "export PYTHONPATH=\".:\"" >> .venv/bin/activate
 source .venv/bin/activate
 pip install -r requirements.txt
 pip install -U pyasn1
+python setup.py install
 ```
 
 ### Configuration
